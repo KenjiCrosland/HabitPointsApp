@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import moment from 'moment/src/moment';
 import 
 { 	View, 
 	Text, 
@@ -21,17 +22,73 @@ export default class HabitScreen extends Component {
   		size={26}
   		style={{color: tintColor}}
   		/>
-  		)
+  	)
   }
-
   	_returnPointValueString = util.returnPointValueString;
+  	_returnDisplayInterval = util.returnDisplayInterval;
+
+  	_returnIndicators = (habit) => {
+		var recentCompletions;
+		if (!habit.intervals[habit.intervals.length - 1]){
+			recentCompletions = [];
+		} else { 
+			recentCompletions = habit.intervals[habit.intervals.length - 1].completions;
+		}
+		let completions = [];
+		let indicators = [];
+		for(let i = 0; i < habit.bonusFrequency; i++) {
+			var completed = (recentCompletions.length <= i) ? false : true;
+			//completions.push(<CompletionButton key={"CompletionButton" + habit.id + i.toString()} completed={completed} addCompletion={this.props.addCompletion} removeCompletion={this.props.removeCompletion} habit={habit}/>);
+			indicators.push(<View key={"Indicator" + habit.id + i.toString()} style={[styles.indicator, completed && styles.completed]}></View>)
+		}
+		return indicators
+  	}
+
   render () {
     return (
     	<FlatList
- 			data={[
- 				{key: 'a', habitName: 'Drink a Glass of Water', pointValue: 1, intervalString: 'Daily'}, 
- 				{key: 'b', habitName: 'Floss your teeth', pointValue: 2, intervalString: 'Weekly'}
- 				]}
+ 			data={[{
+ 					key: 'a',
+ 					habitName: 'Drink a Glass of Water', 
+ 					pointValue: 1, 
+ 					bonusInterval: 'day', 
+ 					bonusFrequency: 6, 
+ 					snoozeActive: true, 
+ 					snoozeInterval: 'hour', 
+ 					snoozeIncrement: 1,
+ 					intervals: [{
+ 						key: 'interval-a',
+ 						intervalStart: moment().startOf('day').toDate(),
+ 						intervalEnd: moment().endOf('day').toDate(),
+ 						snoozeEnd: moment().startOf('day').toDate(),
+ 						allComplete: false,
+ 						completions: [
+ 						{key: 'completion1', 'habitId': 'a', habitName:'Drink a Glass of Water', completedOn: moment().subtract(2,'hours').toDate(), pointValue: 1}, 
+						{key: 'completion2', 'habitId': 'a', habitName:'Drink a Glass of Water', completedOn: moment().subtract(1,'hours').toDate(), pointValue: 1}, 
+ 						]
+ 					}]
+ 				}, 
+ 				{
+ 					key: 'b',
+ 					habitName: 'Exercise', 
+ 					pointValue: 3, 
+ 					bonusInterval: 'week', 
+ 					bonusFrequency: 3, 
+ 					snoozeActive: true, 
+ 					snoozeInterval: 'day', 
+ 					snoozeIncrement: 1,
+ 					intervals: [{
+ 						key: 'interval-b',
+ 						intervalStart: moment().startOf('week').toDate(),
+ 						intervalEnd: moment().endOf('week').toDate(),
+ 						snoozeEnd: moment().startOf('day').toDate(),
+ 						allComplete: false,
+ 						completions: [
+ 						{key: 'completion1', 'habitId': 'a', habitName:'Exercise', completedOn: moment().subtract(2,'days').toDate(), pointValue: 3}, 
+						{key: 'completion2', 'habitId': 'a', habitName:'Exercise', completedOn: moment().subtract(1,'days').toDate(), pointValue: 3}, 
+ 						]
+ 					}]
+ 				}]}
  			 renderItem={({item}) => 
             <View style={styles.itemContainer}>
 				<View style={styles.pointValueContainer}>
@@ -40,8 +97,7 @@ export default class HabitScreen extends Component {
 				<View style={styles.habitNameContainer}>
 				<Text style={styles.habitName}>{item.habitName}</Text>
 				<View style={styles.indicatorRow}>
-					<Text>{item.intervalString} Bonus:</Text>
-					<View><Text>Completions go Here</Text></View>
+					<Text>{this._returnDisplayInterval(item)} Bonus:</Text>{this._returnIndicators(item)}
 				</View>
 			</View>
 			</View>
