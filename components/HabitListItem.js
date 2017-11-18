@@ -7,14 +7,77 @@ import {
 	Dimensions
 } from 'react-native';
 let deviceWidth = Dimensions.get('window').width;
+import util from './HabitScreenUtil';
+
 
 
 export default class HabitListItem extends Component { 
+	constructor(props) {
+		super(props);
 
+		this.state = {
+			habit: this.props.habit,
+			overlayVisible: false
+		}
+	}
+	_returnPointValueString = util.returnPointValueString;
+  	_returnDisplayInterval = util.returnDisplayInterval;
+  	  	_returnIndicators = (habit) => {
+		var recentCompletions;
+		if (!habit.intervals[habit.intervals.length - 1]){
+			recentCompletions = [];
+		} else { 
+			recentCompletions = habit.intervals[habit.intervals.length - 1].completions;
+		}
+		let completions = [];
+		let indicators = [];
+		for(let i = 0; i < habit.bonusFrequency; i++) {
+			var completed = (recentCompletions.length <= i) ? false : true;
+			//completions.push(<CompletionButton key={"CompletionButton" + habit.id + i.toString()} completed={completed} addCompletion={this.props.addCompletion} removeCompletion={this.props.removeCompletion} habit={habit}/>);
+			indicators.push(<View key={"Indicator" + habit.id + i.toString()} style={[styles.indicator, completed && styles.completed]}></View>)
+		}
+		return indicators
+  	}
+	render(){
+		return(
+			<View style={styles.itemContainer}>
+				<View style={styles.pointValueContainer}>
+					<Text style={styles.pointValue}>{this._returnPointValueString(this.state.habit)}</Text>
+			</View>
+				<View style={styles.habitNameContainer}>
+				<Text style={styles.habitName}>{this.state.habit.habitName}</Text>
+				<View style={styles.indicatorRow}>
+					<Text>{this._returnDisplayInterval(this.state.habit)} Bonus:</Text>{this._returnIndicators(this.state.habit)}
+				</View>
+			</View>
+			</View>
+		) 
+	}
 }
+
 
 var styles = StyleSheet.create({
 	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: '#FFFFFF',
+		paddingTop: 24
+	},
+	listview:{
+		flex: 0,
+		height: 50,
+		marginTop: 60,
+		marginBottom: 60
+	},
+	listitem:{
+		borderTopWidth: 1,
+		borderTopColor: '#dddddd',
+		borderBottomWidth: 1,
+		borderBottomColor: '#eeeeee'
+	},
+
+	itemContainer: {
 		flex: 1,
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -40,7 +103,6 @@ var styles = StyleSheet.create({
 	topRow:{
 		flex: 0,
 		flexDirection: 'row',
-		width: deviceWidth,
 		padding: 10,
 		paddingBottom: 5,
 		alignItems: 'center',
@@ -131,4 +193,6 @@ var styles = StyleSheet.create({
 		color: '#E85305',
 		textAlign: 'center'
 	}
-})
+});
+
+
