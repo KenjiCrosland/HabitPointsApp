@@ -6,7 +6,8 @@ import
 	Button, 
 	FlatList, 
 	StyleSheet, 
-	Dimensions 
+	Dimensions,
+	AsyncStorage 
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HabitListItem from './HabitListItem';
@@ -25,52 +26,46 @@ export default class HabitScreen extends Component {
   		/>
   	)
   }
+	constructor(props) {
+		super(props)
+		let habit = this.props.habit;
+		this.state = {
+			data: []
+		}
+	}
+
+  componentDidMount (){
+    AsyncStorage.getItem("habits").then((habitKeyArray) => {
+        if (habitKeyArray !== null) {
+        console.log(habitKeyArray);
+        console.log("retrieved!");
+        this.setState({"habits": JSON.parse(habitKeyArray)});
+        this._updateData(habitKeyArray);
+      } else {
+        AsyncStorage.setItem("habits", "[]");
+            this._updateData();
+
+      }
+    })
+  }
+
+  async _updateData (habitKeyArray) {
+    if (habitKeyArray && habitKeyArray.length > 0) {
+  	let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
+  	habitsArray = habitsArray.map((habit) => {
+  		return JSON.parse(habit[1])
+  	})
+
+  	this.setState({data: habitsArray})
+        console.log(habitsArray);
+
+  }
+  }
 
   render () {
     return (
     	<FlatList
- 			data={[{
- 					key: 'a',
- 					habitName: 'Drink a Glass of Water', 
- 					pointValue: 1, 
- 					bonusInterval: 'day', 
- 					bonusFrequency: 6, 
- 					snoozeActive: true, 
- 					snoozeInterval: 'hour', 
- 					snoozeIncrement: 1,
- 					intervals: [{
- 						key: 'interval-a',
- 						intervalStart: moment().startOf('day').toDate(),
- 						intervalEnd: moment().endOf('day').toDate(),
- 						snoozeEnd: moment().startOf('day').toDate(),
- 						allComplete: false,
- 						completions: [
- 						{key: 'completion1', 'habitId': 'a', habitName:'Drink a Glass of Water', completedOn: moment().subtract(2,'hours').toDate(), pointValue: 1}, 
-						{key: 'completion2', 'habitId': 'a', habitName:'Drink a Glass of Water', completedOn: moment().subtract(1,'hours').toDate(), pointValue: 1}, 
- 						]
- 					}]
- 				}, 
- 				{
- 					key: 'b',
- 					habitName: 'Exercise', 
- 					pointValue: 3, 
- 					bonusInterval: 'week', 
- 					bonusFrequency: 3, 
- 					snoozeActive: true, 
- 					snoozeInterval: 'day', 
- 					snoozeIncrement: 1,
- 					intervals: [{
- 						key: 'interval-b',
- 						intervalStart: moment().startOf('week').toDate(),
- 						intervalEnd: moment().endOf('week').toDate(),
- 						snoozeEnd: moment().startOf('day').toDate(),
- 						allComplete: false,
- 						completions: [
- 						{key: 'completion1', 'habitId': 'a', habitName:'Exercise', completedOn: moment().subtract(2,'days').toDate(), pointValue: 3}, 
-						{key: 'completion2', 'habitId': 'a', habitName:'Exercise', completedOn: moment().subtract(1,'days').toDate(), pointValue: 3}, 
- 						]
- 					}]
- 				}]}
+ 			data={this.state.data}
  			 renderItem={({item}) => 
 
  			 <HabitListItem habit={item} />

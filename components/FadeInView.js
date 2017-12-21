@@ -4,7 +4,7 @@ import {
   View
 } from 'react-native';
 
- export class FadeInView extends Component {
+ export default class FadeInView extends Component {
    constructor(props) {
      super(props);
      this.state = {
