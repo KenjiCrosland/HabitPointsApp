@@ -11,6 +11,7 @@ import {
 	Text
 } from 'react-native';
 let deviceWidth = Dimensions.get('window').width;
+import { NavigationActions } from 'react-navigation'
 import PointPicker from './PointPicker';
 import dismissKeyboard from 'react-native-dismiss-keyboard';
 import IntervalPicker from './IntervalPicker'
@@ -33,15 +34,19 @@ export default class App extends React.Component {
 		}
 	}
 	static navigationOptions = {
-  	tabBarLabel: 'Home',
-  	tabBarIcon: ({tintColor, focused}) => (
-  		<Ionicons
-  		name={focused ? 'ios-home' : 'ios-home-outline'}
-  		size={26}
-  		style={{color: tintColor}}
-  		/>
-  	)
-  }
+	  	tabBarLabel: 'Home',
+	  	tabBarIcon: ({tintColor, focused}) => (
+	  		<Ionicons
+	  		name={focused ? 'ios-home' : 'ios-home-outline'}
+	  		size={26}
+	  		style={{color: tintColor}}
+	  		/>
+	  	)
+	}
+
+	// const backAction = NavigationActions.back({
+	//   key: null
+	// })
 
   componentDidMount (){
   	AsyncStorage.getItem("habits").then((value) => {
@@ -89,6 +94,19 @@ export default class App extends React.Component {
 		}
 	}
 
+	async _saveHabit(habit) {
+		let newHabitID = habit.key;
+		let habitArray = this.state.habits.slice();
+		habitArray.push(newHabitID);
+		this.setState({habits: [...this.state.habits, ...habitArray]});
+		console.log(this.state.habits);
+		await AsyncStorage.setItem(newHabitID, JSON.stringify(habit));
+		await AsyncStorage.setItem("habits", JSON.stringify(habitArray));
+		this.props.navigation.dispatch(NavigationActions.back())
+		//Next use event emitters to refresh or is there a hook?
+		//The answer is here https://github.com/react-community/react-navigation/issues/922
+	}
+
 	_onPressButton = () => {
 			let newHabitID = "habit" + [this._incrementHabitId(this.state.habits)];
 
@@ -104,6 +122,7 @@ export default class App extends React.Component {
 					snoozeIncrement: parseInt(this.state.snoozeIncrement)
 				};
 			if(this.props.habit) {
+				habit.key = this.state.key;
 				habit.name = this.state.habitName;
 				habit.description = this.state.description;
 				habit.pointValue = parseInt(this.state.pointValue);
@@ -124,18 +143,7 @@ export default class App extends React.Component {
 					completions: []
 					});
 			}
-			let habitArray = this.state.habits.slice();
-			habitArray.push(newHabitID);
-			this.setState({habits: [...this.state.habits, ...habitArray]});
-
-
-			AsyncStorage.setItem(newHabitID, JSON.stringify(habit), (err) => {
-				if (err) throw err;
-				AsyncStorage.setItem("habits", JSON.stringify(habitArray), (err) => {
-				 if (err) throw err;
-				 console.log("Habit saved!")
-				})
-			});
+			this._saveHabit(habit);
 	}
   render() {
 
@@ -196,7 +204,7 @@ export default class App extends React.Component {
 		  		/>
 		  	</View>
 		</View>
-	 <TouchableHighlight onPress={this._onPressButton}>
+	  <TouchableHighlight onPress={this._onPressButton}>
 		    <Text>Submit Habit!</Text>
 	  </TouchableHighlight>
       </View>
