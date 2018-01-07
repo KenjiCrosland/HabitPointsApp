@@ -14,8 +14,8 @@ let deviceWidth = Dimensions.get('window').width;
 import { NavigationActions } from 'react-navigation'
 import PointPicker from './PointPicker';
 import dismissKeyboard from 'react-native-dismiss-keyboard';
-import IntervalPicker from './IntervalPicker'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import IntervalPicker from './IntervalPicker';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -97,18 +97,22 @@ export default class App extends React.Component {
 	async _saveHabit(habit) {
 		let newHabitID = habit.key;
 		let habitArray = this.state.habits.slice();
+		let newInterval = 
 		habitArray.push(newHabitID);
 		this.setState({habits: [...this.state.habits, ...habitArray]});
 		console.log(this.state.habits);
 		await AsyncStorage.setItem(newHabitID, JSON.stringify(habit));
 		await AsyncStorage.setItem("habits", JSON.stringify(habitArray));
-		this.props.navigation.dispatch(NavigationActions.back())
+		// if (!this.props.habit) {
+		// 	await AsyncStorage.setItem(habit.intervals[0], JSON.stringify(newInterval))
+		// }
+		this.props.navigation.navigate('HabitScreen');
 		//Next use event emitters to refresh or is there a hook?
 		//The answer is here https://github.com/react-community/react-navigation/issues/922
 	}
 
 	_onPressButton = () => {
-			let newHabitID = "habit" + [this._incrementHabitId(this.state.habits)];
+			let newHabitID = "habit" + Date.now().toString();
 
 			let habit = this.props.habit || {
 					key: newHabitID,
@@ -133,15 +137,14 @@ export default class App extends React.Component {
 				habit.snoozeIncrement = parseInt(this.state.snoozeIncrement);
 			}
 			if (!this.props.habit) {
-				habit.intervals = [];
-				habit.intervals.push({
-					key: 1,
+				habit.intervals = [{
+					key: "Interval" + Date.now().toString(),
 					intervalStart: moment().startOf(this.state.bonusInterval).toDate(),
 					intervalEnd: moment().endOf(this.state.bonusInterval).toDate(),
 					snoozeEnd: moment().startOf(this.state.bonusInterval).toDate(),
 					allComplete: false,
-					completions: []
-					});
+					completions: [] 
+				}];
 			}
 			this._saveHabit(habit);
 	}
