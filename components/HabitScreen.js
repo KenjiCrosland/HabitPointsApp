@@ -31,9 +31,13 @@ export default class HabitScreen extends Component {
 		this.state = {
 			data: []
 		}
+    this._addCompletion = this._addCompletion.bind(this);
+    this._updateData = this._updateData.bind(this);
+    this._loadInitialData = this._loadInitialData.bind(this);
 	}
 
   componentDidMount (){
+
     AsyncStorage.getItem("habits").then((habitKeyArray) => {
         if (habitKeyArray !== null) {
         console.log(habitKeyArray);
@@ -67,7 +71,7 @@ export default class HabitScreen extends Component {
           allComplete: false,
           completions:[]
         });
-        await AsyncStorage.set(habit.key, JSON.stringify(habit));
+        await AsyncStorage.setItem(habit.key, JSON.stringify(habit));
       }
     }
 
@@ -112,7 +116,18 @@ export default class HabitScreen extends Component {
       }
     }
     await AsyncStorage.setItem(habit.key, JSON.stringify(habit))
-    //this._updateData();
+
+    //Maybe mess with this.state.data?
+    this._updateData();
+  }
+
+    _isComplete(habit) {
+    //Check to see if the habit array is completed
+    if (habit.intervals.length && habit.intervals[habit.intervals.length - 1].allComplete === true) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   _hasPendingIntervals(habit){
@@ -133,7 +148,9 @@ export default class HabitScreen extends Component {
     }
   }
 
-  async _updateData (habitKeyArray) {
+  async _updateData () {
+    //TODO: NEED TO PASS habitKeyArray? Or just get it
+    let habitKeyArray = await AsyncStorage.getItem("habits");
     if (habitKeyArray && habitKeyArray.length > 0) {
   	let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
   	habitsArray = habitsArray.map((habit) => {
@@ -143,7 +160,17 @@ export default class HabitScreen extends Component {
   	this.setState({data: habitsArray})
         console.log(habitsArray);
 
+  } else {
+    this._loadInitialData(habitKeyArray);
   }
+  }
+
+  _displayHabit (habit) {
+    if(!this._isComplete(habit) && this._dateRangeIsCurrent(habit)){
+      return true
+     }  else {
+      return false;
+     }
   }
 
   render () {
@@ -151,9 +178,9 @@ export default class HabitScreen extends Component {
     	<FlatList
  			data={this.state.data}
  			 renderItem={({item}) => 
-
- 			 <HabitListItem habit={item} addCompletion={this._addCompletion} />
-
+    
+ 			 <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} />
+ 
  			}
     	/>
       ) 

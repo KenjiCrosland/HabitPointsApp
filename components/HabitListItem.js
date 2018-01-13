@@ -18,6 +18,7 @@ export default class HabitListItem extends Component {
 		super(props);
 
 		this.state = {
+			displayHabit: this.props.displayHabit,
 			habit: this.props.habit,
 			overlayVisible: false
 		}
@@ -44,6 +45,7 @@ export default class HabitListItem extends Component {
 			completions.push(<CompletionButton key={"CompletionButton" + habit.id + i.toString()} completed={completed} addCompletion={this.props.addCompletion} removeCompletion={this.props.removeCompletion} habit={habit}/>);
 			indicators.push(<View key={"Indicator" + habit.id + i.toString()} style={[styles.indicator, completed && styles.completed]}></View>)
 		}
+	if(this.props.displayHabit){
 		return(
 			<View>
 			{this.state.overlayVisible ? null :
@@ -90,6 +92,9 @@ export default class HabitListItem extends Component {
 			</View>
 			</View>
 		) 
+	} else {
+		return null;
+	}
 	}
 }
 
