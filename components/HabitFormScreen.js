@@ -20,9 +20,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 export default class App extends React.Component {
 	constructor(props) {
 		super(props)
-		let habit = this.props.habit;
+		 let habit = (this.props.navigation.state.params) ? this.props.navigation.state.params.habit: null;
+
 		this.state = {
 			habits: [],
+			key: habit ? habit.key : "",
 			habitName: habit ? habit.name : "",
 			description: habit ? habit.description : "",
 			pointValue: habit ? habit.pointValue.toString() : "1",
@@ -49,14 +51,11 @@ export default class App extends React.Component {
 	// })
 
   componentDidMount (){
+   let existingHabit = (this.props.navigation.state.params) ? this.props.navigation.state.params.habit: null;
+   this.setState({existingHabit: existingHabit});
   	AsyncStorage.getItem("habits").then((value) => {
   			if (value !== null) {
-				console.log(value);
-				console.log("retrieved!");
-				this.setState({"habits": JSON.parse(value)});
-				if (Array.isArray(this.state.habits)) {
-					console.log("It's an array")
-				}	
+				this.setState({"habits": JSON.parse(value)});	
 			} else {
 				AsyncStorage.setItem("habits", "[]");
 			}
@@ -95,20 +94,29 @@ export default class App extends React.Component {
 	}
 
 	async _saveHabit(habit) {
+		console.log(this.state.existingHabit);
 		let newHabitID = habit.key;
 		let habitArray = this.state.habits.slice();
-		let newInterval = 
-		habitArray.push(newHabitID);
-		this.setState({habits: [...this.state.habits, ...habitArray]});
+		if (this.state.existingHabit === null){
+
+			this.setState({habits: [...this.state.habits, ...habitArray]});
+		}
 		console.log(this.state.habits);
-		await AsyncStorage.setItem(newHabitID, JSON.stringify(habit));
+		if(this.state.existingHabit){
+			await AsyncStorage.mergeItem(newHabitID, JSON.stringify(habit));
+
+		} else {
+			await AsyncStorage.setItem(newHabitID, JSON.stringify(habit));
+			habitArray.push(newHabitID);
+		}
 		await AsyncStorage.setItem("habits", JSON.stringify(habitArray));
-		// if (!this.props.habit) {
-		// 	await AsyncStorage.setItem(habit.intervals[0], JSON.stringify(newInterval))
-		// }
-		this.props.navigation.navigate('HabitScreen');
-		//Next use event emitters to refresh or is there a hook?
-		//The answer is here https://github.com/react-community/react-navigation/issues/922
+		const resetAction = NavigationActions.reset({
+  			index: 0,
+			  actions: [
+			    NavigationActions.navigate({ routeName: 'HabitScreen'})
+			  ]
+		})
+		this.props.navigation.dispatch(resetAction);
 	}
 
 	_onPressButton = () => {
@@ -125,7 +133,7 @@ export default class App extends React.Component {
 					snoozeInterval: this.state.snoozeInterval,
 					snoozeIncrement: parseInt(this.state.snoozeIncrement)
 				};
-			if(this.props.habit) {
+			if(this.state.existingHabit) {
 				habit.key = this.state.key;
 				habit.name = this.state.habitName;
 				habit.description = this.state.description;
@@ -136,7 +144,7 @@ export default class App extends React.Component {
 				habit.snoozeInterval = this.state.snoozeInterval;
 				habit.snoozeIncrement = parseInt(this.state.snoozeIncrement);
 			}
-			if (!this.props.habit) {
+			if (!this.state.existingHabit) {
 				habit.intervals = [{
 					key: "Interval" + Date.now().toString(),
 					intervalStart: moment().startOf(this.state.bonusInterval).toDate(),

@@ -29,6 +29,9 @@ export default class HabitListItem extends Component {
   	_onPressRow = () => {
 		this.setState({overlayVisible: !this.state.overlayVisible});
 	}
+	_onPressEdit = () => {
+		this.props.navigation.navigate('HabitFormScreen', {habit: this.props.habit});
+	}
 
 	render(){
 		let habit = this.state.habit;

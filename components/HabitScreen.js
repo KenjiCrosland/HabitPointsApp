@@ -174,12 +174,13 @@ export default class HabitScreen extends Component {
   }
 
   render () {
+    //Do something with Flatlist Extra Data
     return (
     	<FlatList
  			data={this.state.data}
- 			 renderItem={({item}) => 
+ 			 renderItem={({item, index}) => 
     
- 			 <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} />
+ 			 <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} navigation={this.props.navigation} />
  
  			}
     	/>
