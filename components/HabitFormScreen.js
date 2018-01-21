@@ -94,14 +94,8 @@ export default class App extends React.Component {
 	}
 
 	async _saveHabit(habit) {
-		console.log(this.state.existingHabit);
 		let newHabitID = habit.key;
 		let habitArray = this.state.habits.slice();
-		if (this.state.existingHabit === null){
-
-			this.setState({habits: [...this.state.habits, ...habitArray]});
-		}
-		console.log(this.state.habits);
 		if(this.state.existingHabit){
 			await AsyncStorage.mergeItem(newHabitID, JSON.stringify(habit));
 
