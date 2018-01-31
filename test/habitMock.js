@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 module.exports = {
      "bonusFrequency": 2,
      "bonusInterval": "day",
@@ -15,8 +17,8 @@ module.exports = {
          "allComplete": false,
          "completions": [],
          "id": "Interval1516494264502",
-         "intervalEnd": "2018-01-21T07:59:59.999Z",
-         "intervalStart": "2018-01-20T08:00:00.000Z",
+         "intervalEnd": moment().endOf("day").toDate(),
+         "intervalStart": moment().startOf("day").toDate(),
          "snoozeEnd": "2018-01-21T00:24:24.504Z",
        },
      ],
