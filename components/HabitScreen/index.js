@@ -9,8 +9,11 @@ import
 	Dimensions,
 	AsyncStorage 
 } from 'react-native';
+import {ButtonGroup} from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HabitListItem from './HabitListItem';
+import util from './HabitScreenUtil';
+
 let deviceWidth = Dimensions.get('window').width;
 
 export default class HabitScreen extends Component {
@@ -29,19 +32,19 @@ export default class HabitScreen extends Component {
 		super(props)
 		let habit = this.props.habit;
 		this.state = {
+      selectedIndex: 0,
 			data: []
 		}
     this._addCompletion = this._addCompletion.bind(this);
     this._updateData = this._updateData.bind(this);
     this._loadInitialData = this._loadInitialData.bind(this);
+    this._updateButtonIndex = this._updateButtonIndex.bind(this);
 	}
 
   componentDidMount (){
 
     AsyncStorage.getItem("habits").then((habitKeyArray) => {
         if (habitKeyArray !== null) {
-        console.log(habitKeyArray);
-        console.log("retrieved!");
         this.setState({"habits": JSON.parse(habitKeyArray)});
         this._loadInitialData(habitKeyArray);
       } else {
@@ -75,8 +78,7 @@ export default class HabitScreen extends Component {
       }
     }
 
-    this.setState({data: habitsArray})
-        console.log(habitsArray);
+    this.setState({data: habitsArray});
 
   }
 }
@@ -157,8 +159,7 @@ export default class HabitScreen extends Component {
   		return JSON.parse(habit[1])
   	})
 
-  	this.setState({data: habitsArray})
-        console.log(habitsArray);
+  	this.setState({data: habitsArray});
 
   } else {
     this._loadInitialData(habitKeyArray);
@@ -166,24 +167,38 @@ export default class HabitScreen extends Component {
   }
 
   _displayHabit (habit) {
-    if(!this._isComplete(habit) && this._dateRangeIsCurrent(habit)){
-      return true
-     }  else {
-      return false;
-     }
+    if (!this._isComplete(habit) && this._dateRangeIsCurrent(habit)) {
+      if (!util.isSnoozed(habit) || this.state.selectedIndex == 1){
+        return true
+      }
+    }
+    return false;
+  }
+
+  async _updateButtonIndex(selectedIndex) {
+    this.setState({selectedIndex});
   }
 
   render () {
-    //Do something with Flatlist Extra Data
+    const buttons = ['To Do', 'Upcoming'];
+    const {selectedIndex} = this.state;
     return (
+      <View>
+      <ButtonGroup
+      onPress={this._updateButtonIndex}
+      buttons={buttons}
+      selectedIndex={selectedIndex}
+      />
     	<FlatList
+      displayMode={this.state.selectedIndex}
  			data={this.state.data}
  			 renderItem={({item, index}) => 
     
- 			 <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} navigation={this.props.navigation} />
+ 			 <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} navigation={this.props.navigation}/>
  
  			}
     	/>
+      </View>
       ) 
 
   } 

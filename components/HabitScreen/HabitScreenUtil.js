@@ -1,11 +1,52 @@
+let moment = require('moment');
+
+function getLastInterval(habit) {
+ return habit.intervals[habit.intervals.length - 1];
+}
+
+function getLastCompletion(habit) {
+	let completions = getLastInterval(habit).completions;
+	if (completions.length){
+		return completions[completions.length - 1];
+	} else {
+		return null;
+	}
+}
+
 function timeAfterLastCompletion(habit) {
-	return "Hello";
+	let lastCompletionTime = getLastCompletion(habit).completedOn;
+	return moment().hour() - moment(lastCompletionTime).hour();
+}
+
+let numberOfCurrentCompletions = function(habit) {
+	return getLastInterval(habit).length;
+}
+
+let isSnoozed = function(habit) {
+	let completions = habit.intervals[habit.intervals.length - 1].completions.length;
+	let goalInterval;
+	let timeSinceStartOfInterval;
+	if (habit.bonusInterval.toLowerCase() === "day") {
+		 goalInterval = Math.floor(14/habit.bonusFrequency);
+		 timeSinceStartOfInterval = moment().hour() - 9;
+	} else if (habit.bonusInterval.toLowerCase() === "week") {
+		 goalInterval = Math.floor(7/habit.bonusFrequency);
+		 timeSinceStartOfInterval = moment().day() + 1;
+	} else if (habit.bonusInterval.toLowerCase() === "month") {
+	 goalInterval = Math.floor(moment().daysInMonth() / habit.bonusFrequency);
+	 timeSinceStartOfInterval = moment().date();
+	}
+	return ( completions * goalInterval > timeSinceStartOfInterval);
 }
 
 
 
-module.exports  = {
+module.exports = {
+	getLastInterval: getLastInterval,
+	getLastCompletion: getLastCompletion,
 	timeAfterLastCompletion: timeAfterLastCompletion,
+	numberOfCurrentCompletions: numberOfCurrentCompletions,
+	isSnoozed: isSnoozed,
 
 	returnPointValueString: (habit) => {
 		if(habit.pointValue === 1){
@@ -25,12 +66,7 @@ module.exports  = {
 			default:
 				return 'Daily';
 		}
-	},
-
-	isSnoozed: (habit) => {
-    let timeAfterLastCompletion;
-    let numberOfCurrentCompetions;
-    let completionGoalTime;
+	}
 
     /* Case: Day with three completions
 
@@ -61,5 +97,5 @@ module.exports  = {
     //Wakeup time + whatever that number 
     // If last completion is before the next time and so is the current time, don't show the habit
     // However if the current time is after that next time then the 
-  }
+
 }
