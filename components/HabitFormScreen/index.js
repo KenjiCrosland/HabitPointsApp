@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 let deviceWidth = Dimensions.get('window').width;
 import { NavigationActions } from 'react-navigation'
-import PointPicker from './PointPicker';
+import PointPicker from '../PointPicker';
 import dismissKeyboard from 'react-native-dismiss-keyboard';
-import IntervalPicker from './IntervalPicker';
+import IntervalPicker from '../IntervalPicker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default class App extends React.Component {

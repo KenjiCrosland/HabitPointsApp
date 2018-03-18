@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import moment from 'moment/src/moment';
+import {ButtonGroup} from 'react-native-elements'
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import HabitListItem from './HabitListItem';
+import habitUtil from '../../lib/habit-util';
+import loadInitialData from '../../lib/load-initial-data';
 import 
-{ 	View, 
+{ View, 
 	Text, 
 	Button, 
 	FlatList, 
@@ -9,16 +14,11 @@ import
 	Dimensions,
 	AsyncStorage 
 } from 'react-native';
-import {ButtonGroup} from 'react-native-elements'
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import HabitListItem from './HabitListItem';
-import util from './HabitScreenUtil';
 
 let deviceWidth = Dimensions.get('window').width;
 
 export default class HabitScreen extends Component {
   static navigationOptions = {
-
   	tabBarLabel: 'Home',
   	tabBarIcon: ({tintColor, focused}) => (
   		<Ionicons
@@ -32,21 +32,19 @@ export default class HabitScreen extends Component {
 		super(props)
 		let habit = this.props.habit;
 		this.state = {
-      selectedIndex: 0,
+      displayModeIndex: 0,
 			data: []
 		}
     this._addCompletion = this._addCompletion.bind(this);
     this._updateData = this._updateData.bind(this);
-    this._loadInitialData = this._loadInitialData.bind(this);
     this._updateButtonIndex = this._updateButtonIndex.bind(this);
 	}
 
   componentDidMount (){
-
     AsyncStorage.getItem("habits").then((habitKeyArray) => {
         if (habitKeyArray !== null) {
         this.setState({"habits": JSON.parse(habitKeyArray)});
-        this._loadInitialData(habitKeyArray);
+        loadInitialData(habitKeyArray, this);
       } else {
         AsyncStorage.setItem("habits", "[]");
             this._updateData();
@@ -54,34 +52,6 @@ export default class HabitScreen extends Component {
       }
     })
   }
-
-  async _loadInitialData(habitKeyArray){
-
-  if (habitKeyArray && habitKeyArray.length > 0) {
-    let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
-    habitsArray = habitsArray.map((habit) => {
-      return JSON.parse(habit[1])
-    })
-
-    for (i in habitsArray) {
-      let habit = habitsArray[i];
-      if (!this._dateRangeIsCurrent(habit) && !this._hasPendingIntervals(habit)) {
-        habit.intervals.push({
-          id: "Interval" + Date.now().toString(),
-          intervalStart: moment().startOf(habit.bonusInterval).toDate(),
-          intervalEnd: moment().endOf(habit.bonusInterval).toDate(),
-          snoozeEnd: moment().startOf(this.state.bonusInterval).toDate(),
-          allComplete: false,
-          completions:[]
-        });
-        await AsyncStorage.setItem(habit.key, JSON.stringify(habit));
-      }
-    }
-
-    this.setState({data: habitsArray});
-
-  }
-}
 
   async _addCompletion (habit) {
     let completedOn = new Date();
@@ -118,36 +88,7 @@ export default class HabitScreen extends Component {
       }
     }
     await AsyncStorage.setItem(habit.key, JSON.stringify(habit))
-
-    //Maybe mess with this.state.data?
     this._updateData();
-  }
-
-  _isComplete(habit) {
-    //Check to see if the habit array is completed
-    if (habit.intervals.length && habit.intervals[habit.intervals.length - 1].allComplete === true) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  _hasPendingIntervals(habit){
-    let lastInterval = habit.intervals[habit.intervals.length - 1];
-    if (moment(new Date).isBefore(lastInterval.intervalStart)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  _dateRangeIsCurrent(habit) {
-    let lastInterval = habit.intervals[habit.intervals.length - 1];
-    if (moment(new Date).isBetween(lastInterval.intervalStart, lastInterval.intervalEnd)) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   async _updateData () {
@@ -162,44 +103,39 @@ export default class HabitScreen extends Component {
   	this.setState({data: habitsArray});
 
   } else {
-    this._loadInitialData(habitKeyArray);
+    loadInitialData(habitKeyArray, this);
   }
   }
 
   _displayHabit (habit) {
-    if (!this._isComplete(habit) && this._dateRangeIsCurrent(habit)) {
-      if (!util.isSnoozed(habit) || this.state.selectedIndex == 1){
+    if (!habitUtil.isComplete(habit) && habitUtil.dateRangeIsCurrent(habit)) {
+      if (!habitUtil.isSnoozed(habit) || this.state.displayModeIndex == 1){
         return true
       }
     }
     return false;
   }
 
-  async _updateButtonIndex(selectedIndex) {
-    this.setState({selectedIndex});
+  _updateButtonIndex(displayModeIndex) {
+    this.setState({displayModeIndex});
   }
 
   render () {
     const buttons = ['To Do', 'Upcoming'];
-    const {selectedIndex} = this.state;
+    const {displayModeIndex} = this.state;
     return (
       <View>
-      <ButtonGroup
-      onPress={this._updateButtonIndex}
-      buttons={buttons}
-      selectedIndex={selectedIndex}
-      />
-    	<FlatList
-      displayMode={this.state.selectedIndex}
- 			data={this.state.data}
- 			 renderItem={({item, index}) => 
-    
- 			 <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} navigation={this.props.navigation}/>
- 
- 			}
-    	/>
+        <ButtonGroup
+          onPress={this._updateButtonIndex}
+          buttons={buttons}
+          selectedIndex={displayModeIndex} />
+        <FlatList
+          displayMode={this.state.displayModeIndex}
+          data={this.state.data}
+          renderItem={({item, index}) => 
+            <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} navigation={this.props.navigation} />
+          } />
       </View>
       ) 
-
   } 
 }

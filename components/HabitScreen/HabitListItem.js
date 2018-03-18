@@ -9,9 +9,7 @@ import {
 import FadeInView from './FadeInView';
 import CompletionButton from './CompletionButton';
 let deviceWidth = Dimensions.get('window').width;
-import util from './HabitScreenUtil';
-
-
+import habitUtil from '../../lib/habit-util';
 
 export default class HabitListItem extends Component { 
 	constructor(props) {
@@ -23,9 +21,6 @@ export default class HabitListItem extends Component {
 			overlayVisible: false
 		}
 	}
-	_returnPointValueString = util.returnPointValueString;
-  	_returnDisplayInterval = util.returnDisplayInterval;
-
   	_onPressRow = () => {
 		this.setState({overlayVisible: !this.state.overlayVisible});
 	}
@@ -55,12 +50,12 @@ export default class HabitListItem extends Component {
 			(<TouchableHighlight onPress={this._onPressRow}>
 			<View style={styles.itemContainer}>
 				<View style={styles.pointValueContainer}>
-					<Text style={styles.pointValue}>{this._returnPointValueString(this.state.habit)}</Text>
+					<Text style={styles.pointValue}>{habitUtil.returnPointValueString(this.state.habit)}</Text>
 			</View>
 				<View style={styles.habitNameContainer}>
 				<Text style={styles.habitName}>{this.state.habit.name}</Text>
 				<View style={styles.indicatorRow}>
-					<Text>{this._returnDisplayInterval(this.state.habit)} Bonus:</Text>{indicators}
+					<Text>{habitUtil.returnDisplayInterval(this.state.habit)} Bonus:</Text>{indicators}
 				</View>
 			</View>
 			</View>
@@ -76,8 +71,8 @@ export default class HabitListItem extends Component {
 					<View style={styles.topRow}>
 						<Text style={styles.habitNameExpanded}>{this.state.habit.habitName}</Text>
 						<View style={styles.expandedPointValueContainer}>
-						<Text style={styles.pointValue}>{this._returnDisplayInterval(this.state.habit)}</Text>
-						<Text style={styles.pointValue}>{this._returnPointValueString(this.state.habit)}</Text>
+						<Text style={styles.pointValue}>{habitUtil.returnDisplayInterval(this.state.habit)}</Text>
+						<Text style={styles.pointValue}>{habitUtil.returnPointValueString(this.state.habit)}</Text>
 						</View>
 					</View>
 					<View style={styles.completionRow}>
