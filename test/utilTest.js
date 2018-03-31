@@ -1,7 +1,7 @@
 var assert = require('assert');
 var habitMock = require('./habitMock');
 var moment = require('moment');
-var util = require('../components/HabitScreen/HabitScreenUtil');
+var util = require('../lib/habit-util');
 
 
 describe('Habit with no completions', function() {
