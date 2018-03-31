@@ -40,7 +40,6 @@ export default class HabitScreen extends Component {
     this._updateButtonIndex = this._updateButtonIndex.bind(this);
 	}
 
-<<<<<<< HEAD
   async componentDidMount (){
     let habitKeyArray = await AsyncStorage.getItem("habits"); 
     this.setState({"habits": JSON.parse(habitKeyArray)});
@@ -51,19 +50,6 @@ export default class HabitScreen extends Component {
       await  AsyncStorage.setItem("habits", "[]");
       this._updateData();
     }
-=======
-  componentDidMount (){
-    AsyncStorage.getItem("habits").then((habitKeyArray) => {
-        if (habitKeyArray !== null) {
-        this.setState({"habits": JSON.parse(habitKeyArray)});
-        loadInitialData(habitKeyArray, this);
-      } else {
-        AsyncStorage.setItem("habits", "[]");
-            this._updateData();
-
-      }
-    })
->>>>>>> ee5489fcd66fe6eabcf0452b838ffff823c067bf
   }
 
   async _addCompletion (habit) {
@@ -108,7 +94,6 @@ export default class HabitScreen extends Component {
     //TODO: NEED TO PASS habitKeyArray? Or just get it
     let habitKeyArray = await AsyncStorage.getItem("habits");
     if (habitKeyArray && habitKeyArray.length > 0) {
-<<<<<<< HEAD
       let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
       habitsArray = habitsArray.map((habit) => {
         return JSON.parse(habit[1])
@@ -117,18 +102,6 @@ export default class HabitScreen extends Component {
     } else {
         loadInitialData(habitKeyArray);
     }
-=======
-  	let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
-  	habitsArray = habitsArray.map((habit) => {
-  		return JSON.parse(habit[1])
-  	})
-
-  	this.setState({data: habitsArray});
-
-  } else {
-    loadInitialData(habitKeyArray, this);
-  }
->>>>>>> ee5489fcd66fe6eabcf0452b838ffff823c067bf
   }
 
   _displayHabit (habit) {
