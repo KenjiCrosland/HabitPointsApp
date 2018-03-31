@@ -91,7 +91,6 @@ export default class HabitScreen extends Component {
   }
 
   async _updateData () {
-    //TODO: NEED TO PASS habitKeyArray? Or just get it
     let habitKeyArray = await AsyncStorage.getItem("habits");
     if (habitKeyArray && habitKeyArray.length > 0) {
       let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];

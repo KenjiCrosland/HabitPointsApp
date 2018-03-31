@@ -7,24 +7,32 @@ import getStats from '../../lib/get-stats';
 import _ from 'lodash';
 
 export default class StatsScreen extends Component {
-  static navigationOptions = {
-  	tabBarLabel: 'Stats',
-  	tabBarIcon: ({tintColor, focused}) => (
-  		<Ionicons
-  		name={focused ? 'ios-stats' : 'ios-stats-outline'}
-  		size={26}
-  		style={{color: tintColor}}
-  		/>
-  		)
+  static navigationOptions = ({navigation}) => {
+    return {
+      tabBarLabel: 'Stats',
+      tabBarIcon: ({tintColor, focused}) => (
+        <Ionicons
+        name={focused ? 'ios-stats' : 'ios-stats-outline'}
+        size={26}
+        style={{color: tintColor}}
+        />),
+      tabBarOnPress: async (tab, jumpToIndex) => {
+        if(!tab.focused){
+          await navigation.state.params.update();
+          jumpToIndex(tab.index);
+        }
+      }      
+    }
   }
+
 
   constructor(props) {
 		super(props)
 		this.state = {}
     this._updateData = this._updateData.bind(this);
-	}
-
-  async componentDidMount (){
+  }
+  
+  async _updateStats (){
     let habitKeyArray = await AsyncStorage.getItem("habits"); 
     this.setState({habits: JSON.parse(habitKeyArray)});
     this.setState({interval: moment().toDate()});
@@ -40,6 +48,12 @@ export default class StatsScreen extends Component {
     }
   }
 
+  async componentDidMount (){
+    this.props.navigation.setParams({
+      update: this._updateStats.bind(this)
+    })
+  }
+
   async _updateData () {
     //TODO: Needs to update on tab press
     let habitKeyArray = await AsyncStorage.getItem("habits");
@@ -49,6 +63,7 @@ export default class StatsScreen extends Component {
         return JSON.parse(habit[1])
       })
       this.setState({habits: habitsArray});
+      console.log(habitsArray);
     } else {
         loadInitialData(habitKeyArray);
     }
@@ -61,6 +76,9 @@ export default class StatsScreen extends Component {
           <Text style={styles.mainTitle}>Stats</Text>
         </View>
         <View style={styles.container}>
+        <View>
+            <Text>{moment(this.state.interval).date()} {moment(this.state.interval).format('MMM')}</Text>
+          </View>
           <View style={styles.total}>
           <Text style={styles.h2}>Total Points Today</Text>
           <Text style={styles.mainPointValue}>{this.state.todayTotal}</Text>
@@ -78,10 +96,6 @@ export default class StatsScreen extends Component {
               <Text>vs this months's Avg:</Text>
               <Text style={[styles.greenText, this.state.todayVsThisMonthAvg < 0 && styles.redText]}>{this.state.todayVsThisMonthAvg}</Text>
             </View>
-          </View>
-          <View>
-            <Text>{moment(this.state.interval).date()}</Text>
-            <Text>{moment(this.state.interval).format('MMM')}</Text>
           </View>
         </View>
       </View>

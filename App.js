@@ -33,7 +33,7 @@ const RootNavigator = TabNavigator({
   HabitScreen: { 
     screen: HabitStackNavigator
     }, 
-  Details: {
+  StatsScreen: {
     screen: StatsScreen
   },
 });
