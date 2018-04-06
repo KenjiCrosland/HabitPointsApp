@@ -30,6 +30,7 @@ export default class StatsScreen extends Component {
 		super(props)
 		this.state = {}
     this._updateData = this._updateData.bind(this);
+    this._addInterval = this._addInterval.bind(this);
   }
   
   async _updateStats (){
@@ -54,8 +55,17 @@ export default class StatsScreen extends Component {
     })
   }
 
+  async _addInterval(intervalType) {
+    return "TBD";
+  }
+
+  async _subtractInterval(num, intervalType) {
+    let currentInterval = this.state.interval;
+    let newInterval = moment(currentInterval).subtract(num, intervalType);
+    this.setState({interval: newInterval});
+  }
+
   async _updateData () {
-    //TODO: Needs to update on tab press
     let habitKeyArray = await AsyncStorage.getItem("habits");
     if (habitKeyArray && habitKeyArray.length > 0) {
       let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
@@ -76,12 +86,12 @@ export default class StatsScreen extends Component {
           <Text style={styles.mainTitle}>Stats</Text>
         </View>
         <View style={styles.container}>
-        <View>
+          <View>
             <Text>{moment(this.state.interval).date()} {moment(this.state.interval).format('MMM')}</Text>
           </View>
           <View style={styles.total}>
           <Text style={styles.h2}>Total Points Today</Text>
-          <Text style={styles.mainPointValue}>{this.state.todayTotal}</Text>
+          <Text style={styles.mainPointValue}>{this.state.thisIntervalTotal}</Text>
           </View>
           <View style={styles.overview}>
             <View style={styles.listItem}>
