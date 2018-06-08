@@ -33,11 +33,14 @@ export default class HabitScreen extends Component {
 		let habit = this.props.habit;
 		this.state = {
       displayModeIndex: 0,
-			data: []
+      data: [],
+      scrollEnabled: true
 		}
     this._addCompletion = this._addCompletion.bind(this);
     this._updateData = this._updateData.bind(this);
     this._updateButtonIndex = this._updateButtonIndex.bind(this);
+    this._setScrollEnabled = this._setScrollEnabled.bind(this);
+
 	}
 
   async componentDidMount (){
@@ -103,6 +106,12 @@ export default class HabitScreen extends Component {
     }
   }
 
+  _setScrollEnabled(enabled) {
+    this.setState({
+      scrollEnabled: enabled
+    })
+  }
+
   _displayHabit (habit) {
     if (!habitUtil.isComplete(habit) && habitUtil.dateRangeIsCurrent(habit)) {
       if (!habitUtil.isSnoozed(habit) || this.state.displayModeIndex == 1){
@@ -128,8 +137,9 @@ export default class HabitScreen extends Component {
         <FlatList
           displayMode={this.state.displayModeIndex}
           data={this.state.data}
+          scrollEnabled={this.state.scrollEnabled}
           renderItem={({item, index}) => 
-            <HabitListItem habit={item} addCompletion={this._addCompletion} displayHabit={this._displayHabit(item)} navigation={this.props.navigation} />
+            <HabitListItem habit={item} addCompletion={this._addCompletion} displayIndex={this.state.displayModeIndex} setScrollEnabled={this._setScrollEnabled} navigation={this.props.navigation} />
           } />
       </View>
       ) 

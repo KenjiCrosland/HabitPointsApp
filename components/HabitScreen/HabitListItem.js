@@ -1,31 +1,56 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
 	StyleSheet,
 	TouchableHighlight,
+	Animated,
 	View,
 	Text,
 	Dimensions
 } from 'react-native';
+import Swipeable from '../Swipeable';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import FadeInView from './FadeInView';
 import CompletionButton from './CompletionButton';
 let deviceWidth = Dimensions.get('window').width;
 import habitUtil from '../../lib/habit-util';
 
-export default class HabitListItem extends Component { 
+export default class HabitListItem extends PureComponent { 
+	containerHeight = new Animated.Value(80);
+
 	constructor(props) {
 		super(props);
 
 		this.state = {
 			displayHabit: this.props.displayHabit,
+			hidden: false,
 			habit: this.props.habit,
-			overlayVisible: false
+			overlayVisible: false,
 		}
+	}
+	componentWillMount() {
+		this.setState({hidden:false})
 	}
   	_onPressRow = () => {
 		this.setState({overlayVisible: !this.state.overlayVisible});
 	}
 	_onPressEdit = () => {
 		this.props.navigation.navigate('HabitFormScreen', {habit: this.props.habit});
+	}
+	_hideHabit = () =>{
+		Animated.timing(this.containerHeight, {
+			toValue: 0 
+		}).start(()=>{
+			this.setState({hidden: true});
+		});
+	}
+
+	_displayHabit (habit) {
+		if (!habitUtil.isComplete(habit) && habitUtil.dateRangeIsCurrent(habit) && !this.state.hidden) {
+		  if (!habitUtil.isSnoozed(habit) || this.props.displayIndex == 1){
+			return true
+		  }
+		}
+		return false;
 	}
 
 	render(){
@@ -43,23 +68,23 @@ export default class HabitListItem extends Component {
 			completions.push(<CompletionButton key={"CompletionButton" + habit.id + i.toString()} completed={completed} addCompletion={this.props.addCompletion} removeCompletion={this.props.removeCompletion} habit={habit}/>);
 			indicators.push(<View key={"Indicator" + habit.id + i.toString()} style={[styles.indicator, completed && styles.completed]}></View>)
 		}
-	if(this.props.displayHabit){
+	if(this._displayHabit(habit)){
 		return(
 			<View>
 			{this.state.overlayVisible ? null :
-			(<TouchableHighlight onPress={this._onPressRow}>
-			<View style={styles.itemContainer}>
-				<View style={styles.pointValueContainer}>
-					<Text style={styles.pointValue}>{habitUtil.returnPointValueString(this.state.habit)}</Text>
-			</View>
-				<View style={styles.habitNameContainer}>
-				<Text style={styles.habitName}>{this.state.habit.name}</Text>
-				<View style={styles.indicatorRow}>
-					<Text>{habitUtil.returnDisplayInterval(this.state.habit)} Bonus:</Text>{indicators}
-				</View>
-			</View>
-			</View>
-			</TouchableHighlight>
+			(<Swipeable onPress={this._onPressRow} setScrollEnabled={this.props.setScrollEnabled} addCompletion={this.props.addCompletion} hideHabit={this._hideHabit} habit={this.state.habit}>
+				<Animated.View style={[styles.itemContainer, {height: this.containerHeight}]}>
+					<View style={styles.pointValueContainer}>
+						<Text style={styles.pointValue}>{habitUtil.returnPointValueString(this.state.habit)}</Text>
+					</View>
+					<View style={styles.habitNameContainer}>
+						<Text style={styles.habitName}>{this.state.habit.name}</Text>
+						<View style={styles.indicatorRow}>
+							<Text>{habitUtil.returnDisplayInterval(this.state.habit)} Bonus:</Text>{indicators}
+						</View>
+					</View>
+				</Animated.View>
+			</Swipeable>
 			)}
 			<View>
 			{this.state.overlayVisible ? 
@@ -105,6 +130,11 @@ var styles = StyleSheet.create({
 		backgroundColor: '#FFFFFF',
 		paddingTop: 24
 	},
+	leftSwipeItem: {
+		flex: 1,
+		alignItems: 'flex-end',
+		justifyContent: 'center',
+	  },
 	listview:{
 		flex: 0,
 		height: 50,
@@ -123,7 +153,6 @@ var styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'flex-start',
-		height: 75,
 		borderTopWidth: 1,
 		borderTopColor: '#dddddd',
 		borderBottomWidth: 1,
