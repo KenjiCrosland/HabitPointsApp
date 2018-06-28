@@ -4,82 +4,75 @@ import { View, Text, AsyncStorage, Dimensions, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import loadInitialData from '../../lib/load-initial-data';
 import getStats from '../../lib/get-stats';
-import _ from 'lodash';
 
 export default class StatsScreen extends Component {
-  static navigationOptions = ({navigation}) => {
-    return {
-      tabBarLabel: 'Stats',
-      tabBarIcon: ({tintColor, focused}) => (
-        <Ionicons
+  static navigationOptions = ({ navigation }) => ({
+    tabBarLabel: 'Stats',
+    tabBarIcon: ({ tintColor, focused }) => (
+      <Ionicons
         name={focused ? 'ios-stats' : 'ios-stats-outline'}
         size={26}
-        style={{color: tintColor}}
-        />),
-      tabBarOnPress: async (tab, jumpToIndex) => {
-        if(!tab.focused){
-          await navigation.state.params.update();
-          jumpToIndex(tab.index);
-        }
-      }      
-    }
-  }
-
+        style={{ color: tintColor }}
+      />
+    ),
+    tabBarOnPress: async (tab, jumpToIndex) => {
+      if (!tab.focused) {
+        await navigation.state.params.update();
+        jumpToIndex(tab.index);
+      }
+    },
+  });
 
   constructor(props) {
-		super(props)
-		this.state = {}
+    super(props);
+    this.state = {};
     this._updateData = this._updateData.bind(this);
-    this._addInterval = this._addInterval.bind(this);
+    // this._addInterval = this._addInterval.bind(this);
   }
-  
-  async _updateStats (){
-    let habitKeyArray = await AsyncStorage.getItem("habits"); 
-    this.setState({habits: JSON.parse(habitKeyArray)});
-    this.setState({interval: moment().toDate()});
-    this.setState({intervalType: 'day'})
+
+  async componentDidMount() {
+    this.props.navigation.setParams({
+      update: this._updateStats.bind(this),
+    });
+  }
+
+  async _updateStats() {
+    const habitKeyArray = await AsyncStorage.getItem('habits');
+    this.setState({ interval: moment().toDate() });
+    this.setState({ intervalType: 'day' });
     if (habitKeyArray !== null) {
-      let habitData = await loadInitialData(habitKeyArray);
-      let stats = await getStats(habitData, this.state.interval, this.state.intervalType);
-      this.setState({...stats});
-      this.setState({habits: habitData});
+      const habitData = await loadInitialData(habitKeyArray);
+      const stats = await getStats(habitData, this.state.interval, this.state.intervalType);
+      this.setState({ ...stats });
     } else {
-      await  AsyncStorage.setItem("habits", "[]");
+      await AsyncStorage.setItem('habits', '[]');
       this._updateData();
     }
   }
 
-  async componentDidMount (){
-    this.props.navigation.setParams({
-      update: this._updateStats.bind(this)
-    })
-  }
-
-  async _addInterval(intervalType) {
-    return "TBD";
-  }
+  // async _addInterval(intervalType) {
+  //   return 'TBD';
+  // }
 
   async _subtractInterval(num, intervalType) {
-    let currentInterval = this.state.interval;
-    let newInterval = moment(currentInterval).subtract(num, intervalType);
-    this.setState({interval: newInterval});
+    const currentInterval = this.state.interval;
+    const newInterval = moment(currentInterval).subtract(num, intervalType);
+    this.setState({ interval: newInterval });
   }
 
-  async _updateData () {
-    let habitKeyArray = await AsyncStorage.getItem("habits");
+  async _updateData() {
+    const habitKeyArray = await AsyncStorage.getItem('habits');
     if (habitKeyArray && habitKeyArray.length > 0) {
-      let habitsArray = await AsyncStorage.multiGet(JSON.parse(habitKeyArray)) || [];
-      habitsArray = habitsArray.map((habit) => {
-        return JSON.parse(habit[1])
-      })
-      this.setState({habits: habitsArray});
-      console.log(habitsArray);
+      let habitsArray = (await AsyncStorage.multiGet(JSON.parse(habitKeyArray))) || [];
+      habitsArray = habitsArray.map(habit => JSON.parse(habit[1]));
+      this.setState({ habits: habitsArray });
+      console.log(this.state.habits);
     } else {
-        loadInitialData(habitKeyArray);
+      loadInitialData(habitKeyArray);
     }
   }
 
-  render () {
+  render() {
     return (
       <View style={styles.main}>
         <View style={styles.navigationBar}>
@@ -87,35 +80,44 @@ export default class StatsScreen extends Component {
         </View>
         <View style={styles.container}>
           <View>
-            <Text>{moment(this.state.interval).date()} {moment(this.state.interval).format('MMM')}</Text>
+            <Text>
+              {moment(this.state.interval).date()} {moment(this.state.interval).format('MMM')}
+            </Text>
           </View>
           <View style={styles.total}>
-          <Text style={styles.h2}>Total Points Today</Text>
-          <Text style={styles.mainPointValue}>{this.state.thisIntervalTotal}</Text>
+            <Text style={styles.h2}>Total Points Today</Text>
+            <Text style={styles.mainPointValue}>{this.state.thisIntervalTotal}</Text>
           </View>
           <View style={styles.overview}>
             <View style={styles.listItem}>
               <Text>vs all-time Avg:</Text>
-              <Text style={[styles.greenText, this.state.todayVsAllTimeAvg < 0 && styles.redText]}>{this.state.todayVsAllTimeAvg }</Text>
+              <Text style={[styles.greenText, this.state.todayVsAllTimeAvg < 0 && styles.redText]}>
+                {this.state.todayVsAllTimeAvg}
+              </Text>
             </View>
             <View style={styles.listItem}>
-              <Text>vs this week's Avg:</Text>
-              <Text style={[styles.greenText, this.state.todayVsThisWeekAvg < 0 && styles.redText]}>{this.state.todayVsThisWeekAvg}</Text>
+              <Text>vs this week&apos;s Avg:</Text>
+              <Text style={[styles.greenText, this.state.todayVsThisWeekAvg < 0 && styles.redText]}>
+                {this.state.todayVsThisWeekAvg}
+              </Text>
             </View>
             <View style={styles.listItem}>
-              <Text>vs this months's Avg:</Text>
-              <Text style={[styles.greenText, this.state.todayVsThisMonthAvg < 0 && styles.redText]}>{this.state.todayVsThisMonthAvg}</Text>
+              <Text>vs this months&apos;s Avg:</Text>
+              <Text
+                style={[styles.greenText, this.state.todayVsThisMonthAvg < 0 && styles.redText]}
+              >
+                {this.state.todayVsThisMonthAvg}
+              </Text>
             </View>
           </View>
         </View>
       </View>
-      ) 
-
-  } 
+    );
+  }
 }
 
-let deviceWidth = Dimensions.get('window').width;
-let deviceHeight = Dimensions.get('window').height;
+const deviceWidth = Dimensions.get('window').width;
+const deviceHeight = Dimensions.get('window').height;
 
 let styles = StyleSheet.create({
   main: {
@@ -127,7 +129,7 @@ let styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomColor: '#EEE',
-    borderBottomWidth: 1 
+    borderBottomWidth: 1,
   },
   mainTitle: {
     top: 7,
@@ -136,29 +138,29 @@ let styles = StyleSheet.create({
   },
   total: {
     marginTop: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   mainPointValue: {
-    fontSize: 48
+    fontSize: 48,
   },
-  h2:{
+  h2: {
     fontSize: 20,
   },
   greenText: {
-    color: 'green'
+    color: 'green',
   },
   redText: {
-    color: 'red'
+    color: 'red',
   },
   overview: {
-    width: deviceWidth * .75,
+    width: deviceWidth * 0.75,
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   listItem: {
     height: 20,
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   container: {
     flexGrow: 1,
@@ -166,5 +168,5 @@ let styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     flexDirection: 'column',
-  }
+  },
 });
