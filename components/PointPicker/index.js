@@ -1,11 +1,8 @@
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { PointPickerButton } from './PointPickerButton';
+import PointPickerButton from '../PointPickerButton';
 
 export default class PointPicker extends PureComponent {
-  constructor(props) {
-    super(props);
-  }
   render() {
     const buttons = [];
     for (let i = 1; i <= this.props.numberOfButtons; i += 1) {
