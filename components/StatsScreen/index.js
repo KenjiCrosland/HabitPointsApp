@@ -1,25 +1,14 @@
 import React, { Component } from 'react';
 import moment from 'moment/src/moment';
 import { View, Text, AsyncStorage, Dimensions, StyleSheet } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import loadInitialData from '../../lib/load-initial-data';
 import getStats from '../../lib/get-stats';
 
 export default class StatsScreen extends Component {
-  static navigationOptions = ({ navigation }) => ({
-    tabBarLabel: 'Stats',
-    tabBarIcon: ({ tintColor, focused }) => (
-      <Ionicons
-        name={focused ? 'ios-stats' : 'ios-stats-outline'}
-        size={26}
-        style={{ color: tintColor }}
-      />
-    ),
-    tabBarOnPress: async (tab, jumpToIndex) => {
-      if (!tab.focused) {
-        await navigation.state.params.update();
-        jumpToIndex(tab.index);
-      }
+  static navigationOptions = () => ({
+    async tabBarOnPress({ navigation, defaultHandler }) {
+      await navigation.state.params.onTabFocus();
+      defaultHandler();
     },
   });
 
@@ -27,16 +16,13 @@ export default class StatsScreen extends Component {
     super(props);
     this.state = {};
     this._updateData = this._updateData.bind(this);
+    this.props.navigation.setParams({
+      onTabFocus: this._handleTabFocus.bind(this),
+    });
     // this._addInterval = this._addInterval.bind(this);
   }
 
-  async componentDidMount() {
-    this.props.navigation.setParams({
-      update: this._updateStats.bind(this),
-    });
-  }
-
-  async _updateStats() {
+  async _handleTabFocus() {
     const habitKeyArray = await AsyncStorage.getItem('habits');
     this.setState({ interval: moment().toDate() });
     this.setState({ intervalType: 'day' });
@@ -49,10 +35,6 @@ export default class StatsScreen extends Component {
       this._updateData();
     }
   }
-
-  // async _addInterval(intervalType) {
-  //   return 'TBD';
-  // }
 
   async _subtractInterval(num, intervalType) {
     const currentInterval = this.state.interval;

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, FlatList, AsyncStorage } from 'react-native';
+import { View, FlatList, AsyncStorage, Button } from 'react-native';
 import moment from 'moment/src/moment';
 import { ButtonGroup } from 'react-native-elements';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,16 +9,12 @@ import loadInitialData from '../../lib/load-initial-data';
 
 
 export default class HabitScreen extends Component {
-  static navigationOptions = {
-    tabBarLabel: 'Home',
-    tabBarIcon: ({ tintColor, focused }) => (
-      <Ionicons
-        name={focused ? 'ios-home' : 'ios-home-outline'}
-        size={26}
-        style={{ color: tintColor }}
-      />
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Home',
+    headerRight: (
+      <Button title="New Habit" onPress={() => navigation.navigate('HabitFormScreen')} />
     ),
-  };
+  });
   constructor(props) {
     super(props);
     this.state = {

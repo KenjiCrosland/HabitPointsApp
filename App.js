@@ -13,25 +13,39 @@ const DetailsScreen = ({ navigation }) => (
 );
 
 const HabitStackNavigator = createStackNavigator({
-  HabitScreen: {
-    screen: HabitScreen,
-    navigationOptions: ({ navigation }) => ({
-      title: 'Home',
-      headerRight: (
-        <Button title="New Habit" onPress={() => navigation.navigate('HabitFormScreen')} />
-      ),
-    }),
-  },
+  HabitScreen: { screen: HabitScreen },
   HabitFormScreen: { screen: HabitFormScreen },
 });
 
 const RootNavigator = createBottomTabNavigator({
-  HabitScreen: {
+  Home: {
     screen: HabitStackNavigator,
+    navigationOptions: () => ({
+      tabBarLabel: 'Home',
+      tabBarIcon: ({ tintColor, focused }) => (
+        <Ionicons
+          name={focused ? 'ios-home' : 'ios-home-outline'}
+          size={26}
+          style={{ color: tintColor }}
+        />
+      ),
+    }),
   },
   StatsScreen: {
     screen: StatsScreen,
+    navigationOptions: () => ({
+      tabBarLabel: 'Stats',
+      tabBarIcon: ({ tintColor, focused }) => (
+        <Ionicons
+          name={focused ? 'ios-stats' : 'ios-stats-outline'}
+          size={26}
+          style={{ color: tintColor }}
+        />
+      ),
+    }),
   },
+}, {
+  lazy: false,
 });
 
 export default RootNavigator;
